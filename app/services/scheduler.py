@@ -174,6 +174,7 @@ class SchedulerService:
             await self._bot.send_message(
                 group.telegram_chat_id,
                 f"🕌 Скоро {label}\nНачало намаза: {row.prayer_time.strftime('%H:%M')}\n"
+                "Время ожидания: 2 минуты\n"
                 "Кто будет совершать намаз с джамаатом?",
             )
             poll_message = await self._bot.send_poll(
