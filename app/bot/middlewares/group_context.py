@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.bot.chat_utils import extract_chat
 from app.database.repositories.group_prayer_setting_repository import GroupPrayerSettingRepository
 from app.database.repositories.group_repository import GroupRepository
+from app.database.repositories.private_user_repository import PrivateUserRepository
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class GroupContextMiddleware(BaseMiddleware):
 
         if chat.type == "private":
             if isinstance(event, Message):
+                await self._record_private_user(event)
                 bot: Bot = data["bot"]
                 await bot.send_message(chat.id, _PRIVATE_CHAT_NOTICE)
             return None
@@ -60,3 +62,15 @@ class GroupContextMiddleware(BaseMiddleware):
                 raise
             await session.commit()
             return result
+
+    async def _record_private_user(self, message: Message) -> None:
+        """Best-effort usage stats: a DB failure here must never block the private-chat notice."""
+        user = message.from_user
+        if user is None:
+            return
+        try:
+            async with self._session_factory() as session:
+                await PrivateUserRepository(session).record_seen(user.id, user.username, user.first_name)
+                await session.commit()
+        except Exception:
+            logger.exception("Failed to record private user_id=%s", user.id)
