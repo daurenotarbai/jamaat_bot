@@ -26,8 +26,11 @@ class GroupContextMiddleware(BaseMiddleware):
     defaults (including the default prayer-notification toggles).
     """
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+    def __init__(
+        self, session_factory: async_sessionmaker[AsyncSession], admin_user_id: int | None = None
+    ) -> None:
         self._session_factory = session_factory
+        self._admin_user_id = admin_user_id
 
     async def __call__(
         self,
@@ -40,6 +43,8 @@ class GroupContextMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         if chat.type == "private":
+            if self._is_admin_stats(event):
+                return await handler(event, data)
             if isinstance(event, Message):
                 await self._record_private_user(event)
                 bot: Bot = data["bot"]
@@ -62,6 +67,13 @@ class GroupContextMiddleware(BaseMiddleware):
                 raise
             await session.commit()
             return result
+
+    def _is_admin_stats(self, event: TelegramObject) -> bool:
+        """The owner's /stats is the only thing allowed through in a private chat."""
+        if not isinstance(event, Message) or self._admin_user_id is None or event.from_user is None:
+            return False
+        text = event.text or ""
+        return event.from_user.id == self._admin_user_id and text.split("@")[0].split()[:1] == ["/stats"]
 
     async def _record_private_user(self, message: Message) -> None:
         """Best-effort usage stats: a DB failure here must never block the private-chat notice."""

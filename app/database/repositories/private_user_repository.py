@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,3 +23,7 @@ class PrivateUserRepository:
 
     async def count(self) -> int:
         return await self._session.scalar(sa.select(sa.func.count()).select_from(PrivateUser)) or 0
+
+    async def count_seen_since(self, since: datetime) -> int:
+        stmt = sa.select(sa.func.count()).select_from(PrivateUser).where(PrivateUser.last_seen_at >= since)
+        return await self._session.scalar(stmt) or 0

@@ -38,7 +38,7 @@ async def main() -> None:
     dp = Dispatcher(storage=MemoryStorage())
     register_error_handler(dp, bot)
 
-    group_context_mw = GroupContextMiddleware(session_factory)
+    group_context_mw = GroupContextMiddleware(session_factory, admin_user_id=settings.admin_user_id)
     logging_mw = LoggingMiddleware()
     for observer in (dp.message, dp.callback_query, dp.my_chat_member):
         observer.outer_middleware(logging_mw)
@@ -63,7 +63,9 @@ async def main() -> None:
     scheduler_service.start()
 
     try:
-        await dp.start_polling(bot, prayer_times_service=prayer_times_service, settings=settings)
+        await dp.start_polling(
+            bot, prayer_times_service=prayer_times_service, settings=settings, session_factory=session_factory
+        )
     finally:
         warm_up_task.cancel()
         await scheduler_service.shutdown()

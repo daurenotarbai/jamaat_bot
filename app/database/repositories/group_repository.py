@@ -71,6 +71,16 @@ class GroupRepository:
         stmt = sa.update(Group).where(Group.id == group_id).values(is_active=False)
         await self._session.execute(stmt)
 
+    async def count_stats(self) -> tuple[int, int, int]:
+        """Returns (total groups, active groups, active groups with a configured location)."""
+        stmt = sa.select(
+            sa.func.count(),
+            sa.func.count().filter(Group.is_active.is_(True)),
+            sa.func.count().filter(Group.is_active.is_(True), Group.latitude.is_not(None)),
+        ).select_from(Group)
+        total, active, with_location = (await self._session.execute(stmt)).one()
+        return total, active, with_location
+
     async def get_active_with_location(self) -> list[Group]:
         stmt = sa.select(Group).where(
             Group.is_active.is_(True),

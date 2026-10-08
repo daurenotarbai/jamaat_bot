@@ -11,6 +11,7 @@ from app.bot.handlers import (
     prayer_times,
     settings,
     start,
+    stats,
 )
 
 routers: list[Router] = [
@@ -24,4 +25,5 @@ routers: list[Router] = [
     juma.router,
     invitation.router,
     membership.router,
+    stats.router,
 ]

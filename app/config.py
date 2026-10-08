@@ -8,6 +8,8 @@ class Settings(BaseSettings):
 
     bot_token: str
 
+    admin_user_id: int | None = None
+
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     postgres_db: str = "jamaat_bot"
