@@ -14,6 +14,7 @@ from app.database.models.poll import JUMA_SENTINEL
 from app.database.models.prayer_schedule import PrayerSchedule
 from app.database.repositories.group_prayer_setting_repository import GroupPrayerSettingRepository
 from app.database.repositories.group_repository import GroupRepository
+from app.database.repositories.group_weekday_setting_repository import GroupWeekdaySettingRepository
 from app.database.repositories.poll_repository import PollRepository
 from app.database.repositories.prayer_schedule_repository import PrayerScheduleRepository
 from app.services.prayer_times import PrayerTimesService, ensure_schedule_cached
@@ -131,13 +132,15 @@ class SchedulerService:
             schedule_repo = PrayerScheduleRepository(session)
             setting_repo = GroupPrayerSettingRepository(session)
 
-            enabled = await setting_repo.get_enabled_names(group.id)
-            pending = await schedule_repo.get_pending_for_date(group.id, today)
+            weekday_enabled = await GroupWeekdaySettingRepository(session).is_enabled(group.id, today.weekday())
+            if weekday_enabled:
+                enabled = await setting_repo.get_enabled_names(group.id)
+                pending = await schedule_repo.get_pending_for_date(group.id, today)
 
-            for row in pending:
-                if row.prayer_name not in enabled:
-                    continue
-                await self._maybe_send_prayer(session, group, row, now_utc)
+                for row in pending:
+                    if row.prayer_name not in enabled:
+                        continue
+                    await self._maybe_send_prayer(session, group, row, now_utc)
 
             if local_now.weekday() == 4:  # Friday
                 await self._maybe_send_juma(session, group, today, local_now)

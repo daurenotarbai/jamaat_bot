@@ -12,6 +12,7 @@ from app.bot.handlers import (
     settings,
     start,
     stats,
+    weekday_notifications,
 )
 
 routers: list[Router] = [
@@ -20,6 +21,7 @@ routers: list[Router] = [
     settings.router,
     location.router,
     prayer_notifications.router,
+    weekday_notifications.router,
     prayer_settings.router,
     prayer_times.router,
     juma.router,

@@ -14,6 +14,7 @@ COMMANDS: list[tuple[str, str]] = [
     ("time_to_prepare_pray", "за сколько минут до намаза присылать уведомление"),
     ("time_to_prepare_juma", "во сколько присылать уведомление о Джума"),
     ("prayer_notifications", "выбрать, для каких намазов включить уведомления"),
+    ("weekday_notifications", "выбрать дни недели для уведомлений"),
     ("today_prayers", "время намазов на сегодня"),
     ("generate_group_invitation", "сгенерировать постер-приглашение с QR-кодом"),
 ]

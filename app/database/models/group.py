@@ -9,6 +9,7 @@ from app.database.base import Base
 
 if TYPE_CHECKING:
     from app.database.models.group_prayer_setting import GroupPrayerSetting
+    from app.database.models.group_weekday_setting import GroupWeekdaySetting
     from app.database.models.poll import Poll
     from app.database.models.prayer_schedule import PrayerSchedule
 
@@ -47,6 +48,9 @@ class Group(Base):
         back_populates="group", cascade="all, delete-orphan", passive_deletes=True
     )
     prayer_settings: Mapped[list["GroupPrayerSetting"]] = relationship(
+        back_populates="group", cascade="all, delete-orphan", passive_deletes=True
+    )
+    weekday_settings: Mapped[list["GroupWeekdaySetting"]] = relationship(
         back_populates="group", cascade="all, delete-orphan", passive_deletes=True
     )
     polls: Mapped[list["Poll"]] = relationship(

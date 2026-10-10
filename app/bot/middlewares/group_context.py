@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.bot.chat_utils import extract_chat
 from app.database.repositories.group_prayer_setting_repository import GroupPrayerSettingRepository
+from app.database.repositories.group_weekday_setting_repository import GroupWeekdaySettingRepository
 from app.database.repositories.group_repository import GroupRepository
 from app.database.repositories.private_user_repository import PrivateUserRepository
 
@@ -56,6 +57,7 @@ class GroupContextMiddleware(BaseMiddleware):
             group, created = await group_repo.get_or_create(chat.id, chat.title or str(chat.id))
             if created:
                 await GroupPrayerSettingRepository(session).create_defaults(group.id)
+                await GroupWeekdaySettingRepository(session).create_defaults(group.id)
             await session.commit()
 
             data["session"] = session
